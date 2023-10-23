@@ -18,9 +18,15 @@ AWS Load Balancer controller manages the following AWS resources
 
 ## Security updates
 **Note**: Deployed chart does not receive security updates automatically. You need to manually upgrade to a newer chart.
+#### Node isolation
+As a security best practice, we recommend isolating the controller deployment pods to specific node groups which run critical components. The helm chart provides parameters ```nodeSelector```, ```tolerations``` and ```affinity``` to configure node isolation. For more information, please refer to the guidance [here](https://aws.github.io/aws-eks-best-practices/security/docs/multitenancy/#isolating-tenant-workloads-to-specific-nodes).
 
 ## Prerequisites
-- Kubernetes >= 1.19
+- Supported Kubernetes Versions 
+  - Chart version v1.5.0+ requires Kubernetes 1.22+
+  - Chart version v1.4.0+ requires Kubernetes 1.19+
+  - Chart version v1.2.0 - v1.3.3 supports Kubernetes 1.16-1.21
+  - Chart version v1.1.6 and before supports Kubernetes 1.15
 - IAM permissions
 - Helm v3
 - Optional dependencies
@@ -79,6 +85,8 @@ kubectl apply -k "github.com/aws/eks-charts/stable/aws-load-balancer-controller/
 #### Installing cert-manager
 
 If you are setting `enableCertManager: true` you need to have installed cert-manager and it's CRDs before installing this chart; to install [cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager) follow the installation guide.
+
+The controller helm chart requires the cert-manager with apiVersion `cert-manager.io/v1`.
 
 Set `cluster.dnsDomain` (default: `cluster.local`) to the actual DNS domain of your cluster to include the FQDN in requested TLS certificates.
 
@@ -251,3 +259,4 @@ The default values set by the application itself can be confirmed [here](https:/
 | `clusterSecretsPermissions.allowAllSecrets`    | If `true`, controller has access to all secrets in the cluster.                                                                                                                                                        | `false`                                           |
 | `controllerConfig.featureGates`                | set of `key: value` pairs that describe AWS load balance controller features                                                                                                                                           | `{}`                                              |
 | `ingressClassConfig.default`                   | If `true`, the ingressclass will be the default class of the cluster.                                                                                                                                                  | `false`                                           |
+| `enableServiceMutatorWebhook`                 | If `false`, disable the Service Mutator webhook which makes all new services of type LoadBalancer reconciled by the lb controller                                                                                                                                              | `true`                                           |

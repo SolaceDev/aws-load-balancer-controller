@@ -104,6 +104,33 @@ You can use IngressClassParams to enforce settings for a set of Ingresses.
       - key: idle_timeout.timeout_seconds
         value: "120"
     ```
+    - with subnets.ids
+    ```
+    apiVersion: elbv2.k8s.aws/v1beta1
+    kind: IngressClassParams
+    metadata:
+      name: awesome-class
+    spec:
+      subnets:
+        ids:
+        - subnet-xxx
+        - subnet-123
+    ```
+    - with subnets.tags
+    ```
+    apiVersion: elbv2.k8s.aws/v1beta1
+    kind: IngressClassParams
+    metadata:
+      name: class2048-config
+    spec:
+      subnets:
+      tags:
+        kubernetes.io/role/internal-elb:
+        - "1"
+        myKey:
+        - myVal0
+        - myVal1
+    ```
 
 ### IngressClassParams specification
 
@@ -134,6 +161,11 @@ Cluster administrators can use the `scheme` field to restrict the scheme for all
 
 1. If `scheme` specified, all Ingresses with this IngressClass will have the specified scheme.
 2. If `scheme` un-specified, Ingresses with this IngressClass can continue to use `alb.ingress.kubernetes.io/scheme annotation` to specify scheme.
+
+#### spec.inboundCIDRs
+
+Cluster administrators can use the optional `inboundCIDRs` field to specify the CIDRs that are allowed to access the load balancers that belong to this IngressClass.
+If the field is specified, LBC will ignore the `alb.ingress.kubernetes.io/inbound-cidrs` annotation.
 
 #### spec.sslPolicy
 
