@@ -2915,18 +2915,19 @@ func Test_defaultModelBuilder_Build(t *testing.T) {
 			certDiscovery := NewMockCertDiscovery(ctrl)
 			annotationParser := annotations.NewSuffixAnnotationParser("alb.ingress.kubernetes.io")
 			authConfigBuilder := NewDefaultAuthConfigBuilder(annotationParser)
-			enhancedBackendBuilder := NewDefaultEnhancedBackendBuilder(k8sClient, annotationParser, authConfigBuilder)
+			enhancedBackendBuilder := NewDefaultEnhancedBackendBuilder(k8sClient, annotationParser, authConfigBuilder, true, true)
 			ruleOptimizer := NewDefaultRuleOptimizer(logr.New(&log.NullLogSink{}))
 			trackingProvider := tracking.NewDefaultProvider("ingress.k8s.aws", clusterName)
 			stackMarshaller := deploy.NewDefaultStackMarshaller()
 			backendSGProvider := networkingpkg.NewMockBackendSGProvider(ctrl)
+			sgResolver := networkingpkg.NewDefaultSecurityGroupResolver(ec2Client, vpcID)
 			if tt.fields.enableBackendSG {
 				if len(tt.fields.backendSecurityGroup) > 0 {
-					backendSGProvider.EXPECT().Get(gomock.Any()).Return(tt.fields.backendSecurityGroup, nil).AnyTimes()
+					backendSGProvider.EXPECT().Get(gomock.Any(), networkingpkg.ResourceType(networkingpkg.ResourceTypeIngress), gomock.Any()).Return(tt.fields.backendSecurityGroup, nil).AnyTimes()
 				} else {
-					backendSGProvider.EXPECT().Get(gomock.Any()).Return("sg-auto", nil).AnyTimes()
+					backendSGProvider.EXPECT().Get(gomock.Any(), networkingpkg.ResourceType(networkingpkg.ResourceTypeIngress), gomock.Any()).Return("sg-auto", nil).AnyTimes()
 				}
-				backendSGProvider.EXPECT().Release(gomock.Any()).Return(nil).AnyTimes()
+				backendSGProvider.EXPECT().Release(gomock.Any(), networkingpkg.ResourceType(networkingpkg.ResourceTypeIngress), gomock.Any()).Return(nil).AnyTimes()
 			}
 			defaultTargetType := tt.defaultTargetType
 			if defaultTargetType == "" {
@@ -2941,6 +2942,7 @@ func Test_defaultModelBuilder_Build(t *testing.T) {
 				clusterName:            clusterName,
 				annotationParser:       annotationParser,
 				subnetsResolver:        subnetsResolver,
+				sgResolver:             sgResolver,
 				backendSGProvider:      backendSGProvider,
 				certDiscovery:          certDiscovery,
 				authConfigBuilder:      authConfigBuilder,
@@ -2962,7 +2964,7 @@ func Test_defaultModelBuilder_Build(t *testing.T) {
 				b.enableIPTargetType = *tt.enableIPTargetType
 			}
 
-			gotStack, _, _, err := b.Build(context.Background(), tt.args.ingGroup)
+			gotStack, _, _, _, err := b.Build(context.Background(), tt.args.ingGroup)
 			if tt.wantErr != "" {
 				assert.EqualError(t, err, tt.wantErr)
 			} else {

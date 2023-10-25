@@ -23,7 +23,6 @@ var _ = Describe("k8s service reconciled by the aws load balancer", func() {
 		labels      map[string]string
 		stack       NLBIPTestStack
 	)
-
 	BeforeEach(func() {
 		ctx = context.Background()
 		numReplicas = 3
@@ -33,6 +32,7 @@ var _ = Describe("k8s service reconciled by the aws load balancer", func() {
 			"app.kubernetes.io/name":     "multi-port",
 			"app.kubernetes.io/instance": name,
 		}
+		dpImage := utils.GetDeploymentImage(tf.Options.TestImageRegistry, utils.HelloImage)
 		deployment = &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
@@ -51,7 +51,7 @@ var _ = Describe("k8s service reconciled by the aws load balancer", func() {
 							{
 								Name:            "app",
 								ImagePullPolicy: corev1.PullAlways,
-								Image:           defaultTestImage,
+								Image:           dpImage,
 								Ports: []corev1.ContainerPort{
 									{
 										ContainerPort: appContainerPort,
@@ -404,6 +404,10 @@ var _ = Describe("k8s service reconciled by the aws load balancer", func() {
 					},
 				})
 				Expect(err).ToNot(HaveOccurred())
+			})
+			By("waiting for target group targets to be healthy", func() {
+				err := waitUntilTargetsAreHealthy(ctx, tf, lbARN, int(numReplicas))
+				Expect(err).NotTo(HaveOccurred())
 			})
 		})
 	})
