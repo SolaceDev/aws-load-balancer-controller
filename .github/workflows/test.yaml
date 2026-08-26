@@ -8,12 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Set up Go 1.x
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
       with:
         go-version: ^1.19
  
     - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Run unit tests
       run: |
@@ -21,14 +21,21 @@ jobs:
         make test
         
     - name: Codecov
-      uses: codecov/codecov-action@v1
+      # v1 was the bash-uploader generation: it fetched and executed an uploader
+      # script from codecov.io at run time — the component that was trojanized in
+      # the 2021 Codecov breach to exfiltrate CI environment variables. v7 uses a
+      # versioned, checksum-verified CLI instead.
+      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
       with:
-        file: ./cover.out # optional
+        files: ./cover.out
+        fail_ci_if_error: false
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: make quick-ci
         run: |
