@@ -9,12 +9,21 @@ jobs:
     name: Detect deprecated apiGroups
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - run: |
-          version=$(curl -sL https://api.github.com/repos/FairwindsOps/pluto/releases/latest | jq -r ".tag_name")
-          number=${version:1}
-          wget https://github.com/FairwindsOps/pluto/releases/download/${version}/pluto_${number}_linux_amd64.tar.gz
-          sudo tar -C /usr/local -xzf pluto_${number}_linux_amd64.tar.gz
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install pluto
+        env:
+          # Pinned + checksum-verified: resolving "latest" at runtime meant any
+          # compromise of the upstream release would execute here unnoticed.
+          # Checksum is from the release's checksums.txt.
+          PLUTO_VERSION: 5.24.3
+          PLUTO_SHA256: f03bcf0ef81ddd2f2a73e7f6f3542f0e0e14ad3213cbdab725dd55dd1c8766ea
+        run: |
+          set -euo pipefail
+          tarball="pluto_${PLUTO_VERSION}_linux_amd64.tar.gz"
+          curl -fsSL -o "$tarball" \
+            "https://github.com/FairwindsOps/pluto/releases/download/v${PLUTO_VERSION}/${tarball}"
+          echo "${PLUTO_SHA256}  ${tarball}" | sha256sum -c -
+          sudo tar -C /usr/local -xzf "$tarball"
       - run: |
           rm -rf docs/install
           rm -rf config/samples
