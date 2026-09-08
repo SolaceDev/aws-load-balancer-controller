@@ -26,7 +26,6 @@ jobs:
     permissions:
       id-token: write
       contents: read
-      packages: read
     steps:
       - name: Update solace-cloud-manifest dev entry (sha + version)
         uses: SolaceDev/maas-build-actions/.github/actions/update-dynamodb-release-manifest@master
