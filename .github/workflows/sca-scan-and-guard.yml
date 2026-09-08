@@ -19,22 +19,6 @@ jobs:
       use_vault: true
       config_file: '.github/workflow-config.json'
 
-  # update_manifest:
-  #   needs: sca_scan
-  #   # if: needs.sca_scan.result == 'success' && github.ref_name == github.event.repository.default_branch
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     id-token: write
-  #     contents: read
-  #   steps:
-  #     - name: Update solace-cloud-manifest dev entry (sha + version)
-  #       uses: SolaceDev/maas-build-actions/.github/actions/update-dynamodb-release-manifest@master
-  #       with:
-  #         release_tag: dev
-  #         squad: launch-pad
-  #         repository: ${{ github.event.repository.name }}
-  #         version: ${{ github.ref_name }}
-  #         sha: ${{ github.sha }}
   update_manifest:
     needs: sca_scan
     # if: needs.sca_scan.result == 'success' && github.ref_name == github.event.repository.default_branch
@@ -44,12 +28,12 @@ jobs:
       contents: read
       packages: read
     steps:
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
-      #   with:
-      #     role-to-assume: arn:aws:iam::868978040651:role/github-solace-cloud-manifest-rw
-      #     aws-region: us-east-1
-      #
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+        with:
+          role-to-assume: arn:aws:iam::868978040651:role/github-solace-cloud-manifest-rw
+          aws-region: us-east-1
+
       - name: Update solace-cloud-manifest
         uses: SolaceDev/solace-public-workflows/.github/actions/cicd-helper@main
         with:
