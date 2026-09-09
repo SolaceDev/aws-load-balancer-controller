@@ -1,0 +1,21 @@
+version: 3
+project:
+  locator: SolaceDev_aws-load-balancer-controller
+  id: SolaceDev_aws-load-balancer-controller
+  name: aws-load-balancer-controller
+  teams: []
+  labels:
+    - go
+vendoredDependencies:
+  forceRescans: false
+  scanMethod: CLILicenseScan
+  licenseScanPathFilters:
+    exclude:
+      - "./.git"
+      - "./.github"
+paths:
+  exclude:
+    - ./.git
+    - ./.github
+telemetry:
+  scope: full
